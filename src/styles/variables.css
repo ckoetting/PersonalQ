@@ -1,5 +1,5 @@
 :root {
-    /* Color Palette */
+    /* Color Palette - Updated to match dashboard screenshot */
     --color-background: #1c1e33;
     --color-card-bg: #252845;
     --color-sidebar: #15172b;
@@ -11,10 +11,12 @@
     --color-warning: #ffb547;
     --color-danger: #ff5c75;
     --color-info: #3c4fe0;
+    --color-progress-bg: rgba(255, 255, 255, 0.1);
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, #3c4fe0 0%, #5b6af9 100%);
     --gradient-secondary: linear-gradient(135deg, #00c4b8 0%, #00e6d9 100%);
+    --gradient-progress: linear-gradient(90deg, #3c4fe0 0%, #6a78ff 100%);
 
     /* Spacing */
     --spacing-xs: 0.25rem;
@@ -54,6 +56,6 @@
 
     /* Layout */
     --sidebar-width: 240px;
-    --header-height: 60px;
-    --content-max-width: 1200px;
+    --header-height: 70px;
+    --content-max-width: 1400px;
 }

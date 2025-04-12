@@ -1,28 +1,24 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import AssignmentList from '../Assignment/AssignmentList';
-import CandidateList from '../Candidate/CandidateList';
-import ReportConfig from '../Report/ReportConfig';
 import './Sidebar.css';
-import { FaCog, FaSearch, FaUser, FaFileAlt } from 'react-icons/fa';
+import { FaHome, FaCog, FaUserTie, FaFileAlt, FaChartBar } from 'react-icons/fa';
 
 const Sidebar = () => {
-    const {
-        selectedAssignment,
-        selectedCandidate,
-        setGeneratedReport,
-        loading,
-        setLoading,
-        setError,
-        apiKeys
-    } = useApp();
-
+    const { apiKeys } = useApp();
     const [showSettings, setShowSettings] = React.useState(false);
 
     // Handle API key settings
     const handleSettingsClick = () => {
         setShowSettings(true);
     };
+
+    // Currently we only have one page, but this is designed for future extension
+    const navItems = [
+        { icon: <FaHome />, name: 'Dashboard', active: true },
+        { icon: <FaUserTie />, name: 'Candidates', active: false },
+        { icon: <FaFileAlt />, name: 'Reports', active: false },
+        { icon: <FaChartBar />, name: 'Analytics', active: false }
+    ];
 
     return (
         <div className="sidebar">
@@ -31,37 +27,18 @@ const Sidebar = () => {
                     <span className="logo-icon">P</span>
                     <h1>PersonalQ</h1>
                 </div>
-                <button
-                    className="settings-button"
-                    onClick={handleSettingsClick}
-                    title="Settings"
-                >
-                    <FaCog />
-                </button>
             </div>
 
-            <div className="sidebar-content">
-                <div className="sidebar-section">
-                    <h2><FaSearch /> Assignments</h2>
-                    <AssignmentList />
-                </div>
-
-                {selectedAssignment && (
-                    <div className="sidebar-section">
-                        <h2><FaUser /> Candidates</h2>
-                        <CandidateList assignmentId={selectedAssignment.id} />
+            <div className="sidebar-nav">
+                {navItems.map((item, index) => (
+                    <div
+                        key={index}
+                        className={`nav-item ${item.active ? 'active' : ''}`}
+                    >
+                        <div className="nav-icon">{item.icon}</div>
+                        <span className="nav-label">{item.name}</span>
                     </div>
-                )}
-
-                {selectedAssignment && selectedCandidate && (
-                    <div className="sidebar-section">
-                        <h2><FaFileAlt /> Report Config</h2>
-                        <ReportConfig
-                            candidateId={selectedCandidate.id}
-                            assignmentId={selectedAssignment.id}
-                        />
-                    </div>
-                )}
+                ))}
             </div>
 
             <div className="sidebar-footer">
@@ -73,6 +50,13 @@ const Sidebar = () => {
                         OpenAI API: {apiKeys.openaiApiKey ? 'Connected' : 'Not Connected'}
                     </div>
                 </div>
+                <button
+                    className="settings-button"
+                    onClick={handleSettingsClick}
+                    title="Settings"
+                >
+                    <FaCog />
+                </button>
                 <p className="version">v1.0.0</p>
             </div>
         </div>

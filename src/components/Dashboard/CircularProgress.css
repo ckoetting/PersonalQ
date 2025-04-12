@@ -1,0 +1,90 @@
+.circular-progress-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.circular-progress {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-small {
+    width: 80px;
+    height: 80px;
+}
+
+.progress-medium {
+    width: 120px;
+    height: 120px;
+}
+
+.progress-large {
+    width: 180px;
+    height: 180px;
+}
+
+.circular-progress svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.progress-background {
+    fill: none;
+    stroke: var(--color-progress-bg);
+    stroke-width: 5;
+}
+
+.progress-value {
+    fill: none;
+    stroke: url(#progressGradient);
+    stroke-width: 5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.progress-content {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.progress-label {
+    font-size: var(--font-size-xxl);
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.progress-small .progress-label {
+    font-size: var(--font-size-lg);
+}
+
+.progress-large .progress-label {
+    font-size: var(--font-size-xxxl);
+}
+
+.progress-sublabel {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-xs);
+}
+
+/* Add SVG gradient definition */
+.circular-progress svg defs {
+    position: absolute;
+}
+
+/* Add this to your component at the top level */
+.gradient-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
