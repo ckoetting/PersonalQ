@@ -1,0 +1,74 @@
+.assignment-details {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.assignment-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.assignment-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.status-badge-large {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-sm);
+}
+
+.assignment-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.assignment-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.info-value {
+    font-size: var(--font-size-md);
+    font-weight: 500;
+}
+
+.section-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-accent-primary);
+}
+
+.description-text {
+    line-height: 1.6;
+    color: var(--color-text-primary);
+}
+
+.assignment-instructions {
+    background-color: rgba(60, 79, 224, 0.1);
+    border-left: 3px solid var(--color-accent-primary);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+}
+
+.instruction-text {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}

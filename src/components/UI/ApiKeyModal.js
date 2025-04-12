@@ -1,0 +1,129 @@
+import React, { useState } from 'react';
+import { useApp } from '../../context/AppContext';
+import './ApiKeyModal.css';
+
+const ApiKeyModal = ({ isOpen, onClose }) => {
+    const { apiKeys, saveApiKeys } = useApp();
+
+    const [formData, setFormData] = useState({
+        ezekiaApiKey: apiKeys.ezekiaApiKey || '',
+        openaiApiKey: apiKeys.openaiApiKey || ''
+    });
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    if (!isOpen) return null;
+
+    // Handle input change
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    // Handle form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        try {
+            const result = await saveApiKeys(formData);
+
+            if (result) {
+                onClose();
+            } else {
+                throw new Error('Failed to save API keys');
+            }
+        } catch (error) {
+            setError(error.message || 'Failed to save API keys. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Determine if the Save button should be disabled
+    const isSaveDisabled = !formData.ezekiaApiKey || !formData.openaiApiKey || loading;
+
+    // Determine if user can close the modal (if they have already set up the keys or we're in development mode)
+    const canClose = (apiKeys.ezekiaApiKey && apiKeys.openaiApiKey) || process.env.NODE_ENV === 'development';
+
+    return (
+        <div className="modal-overlay">
+            <div className="api-key-modal">
+                <div className="modal-header">
+                    <h2>API Key Configuration</h2>
+                    {canClose && (
+                        <button className="close-button" onClick={onClose}>
+                            &times;
+                        </button>
+                    )}
+                </div>
+
+                <div className="modal-content">
+                    <p className="modal-description">
+                        PersonalQ requires API keys to connect to Ezekia and OpenAI. Please enter your keys below.
+                    </p>
+
+                    {error && <div className="error-message">{error}</div>}
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="ezekiaApiKey" className="form-label">
+                                Ezekia API Key
+                            </label>
+                            <input
+                                type="password"
+                                id="ezekiaApiKey"
+                                name="ezekiaApiKey"
+                                className="form-control"
+                                value={formData.ezekiaApiKey}
+                                onChange={handleInputChange}
+                                placeholder="Enter your Ezekia API key"
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="openaiApiKey" className="form-label">
+                                OpenAI API Key
+                            </label>
+                            <input
+                                type="password"
+                                id="openaiApiKey"
+                                name="openaiApiKey"
+                                className="form-control"
+                                value={formData.openaiApiKey}
+                                onChange={handleInputChange}
+                                placeholder="Enter your OpenAI API key"
+                                required
+                            />
+                        </div>
+
+                        <div className="modal-actions">
+                            {canClose && (
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={onClose}
+                                >
+                                    Cancel
+                                </button>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="btn btn-primary"
+                                disabled={isSaveDisabled}
+                            >
+                                {loading ? 'Saving...' : 'Save Keys'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ApiKeyModal;

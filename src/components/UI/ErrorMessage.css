@@ -1,0 +1,66 @@
+.error-message-container {
+    position: fixed;
+    top: var(--spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 100%;
+    max-width: 500px;
+    padding: 0 var(--spacing-md);
+}
+
+.error-message-content {
+    background-color: var(--color-danger);
+    color: white;
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    box-shadow: var(--shadow-md);
+    animation: slideIn 0.3s ease;
+}
+
+.error-icon {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-text {
+    flex: 1;
+    font-size: var(--font-size-sm);
+}
+
+.error-dismiss-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    opacity: 0.7;
+    transition: opacity var(--transition-fast);
+}
+
+.error-dismiss-button:hover {
+    opacity: 1;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
