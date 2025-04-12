@@ -3,10 +3,16 @@ const path = require('path');
 const isDev = require('electron-is-dev');
 const fs = require('fs');
 const Store = require('electron-store');
-require('dotenv').config(); // Load .env file
+const axios = require('axios'); // Add axios for API requests
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // Initialize the store for app settings
 const store = new Store();
+
+// Log environment variables for debugging
+console.log('Environment variables loaded:');
+console.log('EZEKIA_API_KEY:', process.env.EZEKIA_API_KEY ? 'Found' : 'Not found');
+console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'Found' : 'Not found');
 
 let mainWindow;
 
@@ -123,4 +129,41 @@ ipcMain.handle('save-api-keys', (event, { ezekiaApiKey, openaiApiKey }) => {
     store.set('ezekiaApiKey', ezekiaApiKey);
     store.set('openaiApiKey', openaiApiKey);
     return { success: true };
+});
+
+// Handle Ezekia API requests (bypassing CORS)
+ipcMain.handle('ezekia-request', async (event, { method, endpoint, params, data }) => {
+    try {
+        // Get API key from store or environment
+        const ezekiaApiKey = store.get('ezekiaApiKey') || process.env.EZEKIA_API_KEY || '';
+
+        if (!ezekiaApiKey) {
+            return { error: true, message: 'API key not configured' };
+        }
+
+        const baseUrl = 'https://ezekia.com/api';
+        const url = `${baseUrl}/${endpoint}`;
+
+        console.log(`Making ${method} request to ${url}`);
+
+        const response = await axios({
+            method,
+            url,
+            headers: {
+                'Authorization': `Bearer ${ezekiaApiKey}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            params,
+            data
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ezekia API Error (${endpoint}):`, error);
+        return {
+            error: true,
+            message: error.response?.data?.message || 'Failed to fetch data from Ezekia'
+        };
+    }
 });

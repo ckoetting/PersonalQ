@@ -42,7 +42,7 @@ const AssignmentList = () => {
         fetchAssignments();
     }, [apiKeys.ezekiaApiKey]);
 
-    // Filter assignments based on search term
+    // Filter assignments based on search term - FIXED
     useEffect(() => {
         if (!searchTerm.trim()) {
             setFilteredAssignments(assignments);
@@ -51,8 +51,8 @@ const AssignmentList = () => {
 
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         const filtered = assignments.filter(assignment =>
-            assignment.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-            assignment.client?.name.toLowerCase().includes(lowerCaseSearchTerm)
+            (assignment.name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
+            (assignment.client?.name || '').toLowerCase().includes(lowerCaseSearchTerm)
         );
 
         setFilteredAssignments(filtered);
@@ -83,11 +83,11 @@ const AssignmentList = () => {
                             className="assignment-item"
                             onClick={() => handleAssignmentClick(assignment)}
                         >
-                            <div className="assignment-name">{assignment.name}</div>
-                            <div className="assignment-client">{assignment.client?.name}</div>
+                            <div className="assignment-name">{assignment.name || 'Unnamed Assignment'}</div>
+                            <div className="assignment-client">{assignment.client?.name || 'No Client'}</div>
                             <div className="assignment-status">
-                <span className={`status-badge status-${assignment.status.toLowerCase()}`}>
-                  {assignment.status}
+                <span className={`status-badge status-${(assignment.status || 'unknown').toLowerCase()}`}>
+                  {assignment.status || 'Unknown'}
                 </span>
                             </div>
                         </li>

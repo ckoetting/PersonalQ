@@ -20,21 +20,24 @@ class EzekiaClient {
         };
     }
 
-    // Base request method
+    // Base request method - updated to use IPC
     async request(method, endpoint, params = {}, data = null) {
         try {
-            const response = await axios({
+            const response = await window.api.ezekiaRequest({
                 method,
-                url: `${this.baseUrl}/${endpoint}`,
-                headers: this.headers,
+                endpoint,
                 params,
                 data
             });
 
-            return response.data;
+            if (response.error) {
+                throw new Error(response.message);
+            }
+
+            return response;
         } catch (error) {
             console.error(`Ezekia API Error (${endpoint}):`, error);
-            throw new Error(error.response?.data?.message || 'Failed to fetch data from Ezekia');
+            throw new Error(error.message || 'Failed to fetch data from Ezekia');
         }
     }
 
