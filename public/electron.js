@@ -5,25 +5,7 @@ const isDev = require('electron-is-dev');
 const Store = require('electron-store');
 const axios = require('axios');
 
-// Explicitly specify the env file path for debugging
-const envPath = path.join(__dirname, '../.env');
-console.log('Looking for .env file at:', envPath);
-
-// Check if the .env file exists
-if (fs.existsSync(envPath)) {
-    console.log('.env file exists!');
-    // Read and print the contents for debugging (be careful with sensitive data)
-    const envContent = fs.readFileSync(envPath, 'utf8');
-    const envLines = envContent.split('\n');
-    console.log('.env file contains:', envLines.length, 'lines');
-
-    // Now load it with dotenv
-    require('dotenv').config({ path: envPath });
-} else {
-    console.log('.env file NOT found!');
-}
-
-// Initialize the store with debug logging
+// Initialize the store for secure API key storage
 Store.initRenderer();
 const store = new Store({
     name: 'personalq-settings',
@@ -31,45 +13,45 @@ const store = new Store({
     clearInvalidConfig: true
 });
 
-// Debug logging of all store operations
-const originalGet = store.get;
-store.get = function(key, defaultValue) {
-    const value = originalGet.call(this, key, defaultValue);
-    console.log(`Store.get('${key}') called, returning:`, value ? 'Value found' : 'No value found');
-    return value;
-};
+// Configure environment variables based on development or production
+console.log('Running in', isDev ? 'development' : 'production', 'mode');
 
-const originalSet = store.set;
-store.set = function(key, value) {
-    console.log(`Store.set('${key}') called with value:`, value ? 'Value provided' : 'No value provided');
-    return originalSet.call(this, key, value);
-};
+// Determine the correct path for the .env file
+const envPath = isDev
+    ? path.join(__dirname, '../.env')             // Dev: one directory up from /public
+    : path.join(process.resourcesPath, '.env');   // Prod: in the resources directory
 
-// Log all environment variables (be careful with sensitive data)
-console.log('Environment variables:');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('EZEKIA_API_KEY exists:', !!process.env.EZEKIA_API_KEY);
-console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+console.log('Looking for .env file at:', envPath);
 
-// Log store data (be careful with sensitive data)
-console.log('Store data:');
+// Check if the .env file exists and load it
+if (fs.existsSync(envPath)) {
+    console.log('.env file found!');
+    try {
+        require('dotenv').config({ path: envPath });
+        console.log('Environment variables loaded from .env file');
+        console.log('EZEKIA_API_KEY exists:', !!process.env.EZEKIA_API_KEY);
+        console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+    } catch (error) {
+        console.error('Error loading .env file:', error);
+    }
+} else {
+    console.log('.env file NOT found!');
+
+    // Alternative approach: try default dotenv loading
+    try {
+        require('dotenv').config();
+        console.log('Tried loading environment variables from default location');
+        console.log('EZEKIA_API_KEY exists:', !!process.env.EZEKIA_API_KEY);
+        console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+    } catch (error) {
+        console.error('Error loading from default location:', error);
+    }
+}
+
+// Log store data (be careful with sensitive data - just logging existence, not values)
+console.log('API keys in Electron Store:');
 console.log('ezekiaApiKey exists in store:', !!store.get('ezekiaApiKey'));
 console.log('openaiApiKey exists in store:', !!store.get('openaiApiKey'));
-
-// Add a direct test function for IPC
-ipcMain.handle('test-env-access', () => {
-    return {
-        envFileExists: fs.existsSync(envPath),
-        envVarsExist: {
-            ezekiaApiKey: !!process.env.EZEKIA_API_KEY,
-            openaiApiKey: !!process.env.OPENAI_API_KEY
-        },
-        storeVarsExist: {
-            ezekiaApiKey: !!store.get('ezekiaApiKey'),
-            openaiApiKey: !!store.get('openaiApiKey')
-        }
-    };
-});
 
 let mainWindow;
 
@@ -89,15 +71,18 @@ function createWindow() {
         icon: path.join(__dirname, 'logo.png')
     });
 
-    // Load the app
-    mainWindow.loadURL(
-        isDev
-            ? 'http://localhost:3000'
-            : `file://${path.join(__dirname, '../build/index.html')}`
-    );
+    // Load the app from dev server or built files
+    const startUrl = isDev
+        ? 'http://localhost:3000'
+        : `file://${path.join(__dirname, '../build/index.html')}`;
 
-    // Open DevTools by default for debugging
-    mainWindow.webContents.openDevTools();
+    console.log('Loading application from:', startUrl);
+    mainWindow.loadURL(startUrl);
+
+    // Open DevTools in development mode
+    if (isDev) {
+        mainWindow.webContents.openDevTools();
+    }
 
     // Remove the menu bar
     mainWindow.setMenuBarVisibility(false);
@@ -107,7 +92,16 @@ function createWindow() {
     });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    createWindow();
+
+    // On macOS, recreate window when dock icon is clicked
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow();
+        }
+    });
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -115,10 +109,20 @@ app.on('window-all-closed', () => {
     }
 });
 
-app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
-    }
+// IPC handler to test environment and configuration
+ipcMain.handle('test-env-access', () => {
+    return {
+        envFileExists: fs.existsSync(envPath),
+        envPath: envPath,
+        envVarsExist: {
+            ezekiaApiKey: !!process.env.EZEKIA_API_KEY,
+            openaiApiKey: !!process.env.OPENAI_API_KEY
+        },
+        storeVarsExist: {
+            ezekiaApiKey: !!store.get('ezekiaApiKey'),
+            openaiApiKey: !!store.get('openaiApiKey')
+        }
+    };
 });
 
 // Get API keys from store or environment variables
@@ -214,7 +218,7 @@ ipcMain.handle('ezekia-request', async (event, { method, endpoint, params, data 
         const ezekiaApiKey = store.get('ezekiaApiKey') || process.env.EZEKIA_API_KEY || '';
 
         if (!ezekiaApiKey) {
-            return { error: true, message: 'API key not configured' };
+            return { error: true, message: 'Ezekia API key not configured' };
         }
 
         const baseUrl = 'https://ezekia.com/api';
@@ -241,5 +245,39 @@ ipcMain.handle('ezekia-request', async (event, { method, endpoint, params, data 
             error: true,
             message: error.response?.data?.message || 'Failed to fetch data from Ezekia'
         };
+    }
+});
+
+// Handle saving reports to file
+ipcMain.handle('save-report', async (event, reportData) => {
+    try {
+        console.log('Handling save-report request');
+
+        const defaultPath = path.join(
+            app.getPath('documents'),
+            `${reportData.candidateName.replace(/[^a-z0-9]/gi, '_')}_Report.md`
+        );
+
+        const { filePath } = await dialog.showSaveDialog({
+            title: 'Save Candidate Report',
+            defaultPath: defaultPath,
+            filters: [
+                { name: 'Markdown', extensions: ['md'] },
+                { name: 'Text', extensions: ['txt'] },
+                { name: 'All Files', extensions: ['*'] }
+            ]
+        });
+
+        if (!filePath) {
+            return { success: false, message: 'Save cancelled by user' };
+        }
+
+        fs.writeFileSync(filePath, reportData.content, 'utf-8');
+        console.log('Report saved successfully to:', filePath);
+
+        return { success: true, filePath };
+    } catch (error) {
+        console.error('Failed to save report:', error);
+        return { success: false, message: error.message };
     }
 });

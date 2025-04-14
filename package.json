@@ -5,28 +5,22 @@
   "main": "public/electron.js",
   "dependencies": {
     "axios": "^0.27.2",
-    "concurrently": "^7.3.0",
     "dotenv": "^16.0.1",
     "electron-is-dev": "^2.0.0",
     "electron-store": "^8.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
-    "react-scripts": "5.0.1",
-    "wait-on": "^6.0.1"
+    "react-scripts": "5.0.1"
   },
   "scripts": {
-    "start": "export NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron:start": "electron .",
-    "electron:dev": "export NODE_OPTIONS=--openssl-legacy-provider && concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron:build": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build && electron-builder",
-    "win:start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    "win:build": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
-    "win:electron:dev": "set NODE_OPTIONS=--openssl-legacy-provider && concurrently \"npm run win:start\" \"wait-on http://localhost:3000 && electron .\"",
-    "win:electron:build": "set NODE_OPTIONS=--openssl-legacy-provider && npm run win:build && electron-builder"
+    "electron-dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-pack": "electron-builder build --mac --win --linux",
+    "preelectron-pack": "npm run build"
   },
   "eslintConfig": {
     "extends": [
@@ -47,8 +41,11 @@
     ]
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
     "electron": "^20.0.1",
-    "electron-builder": "^23.3.3"
+    "electron-builder": "^23.6.0",
+    "wait-on": "^8.0.3"
   },
   "build": {
     "appId": "com.personalq.app",

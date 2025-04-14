@@ -70,8 +70,11 @@ const ApiKeyModal = ({ isOpen, onClose }) => {
     // Determine if the Save button should be disabled
     const isSaveDisabled = !formData.ezekiaApiKey || !formData.openaiApiKey || loading;
 
+    // Check if development mode to allow closing without keys
+    const isDev = process.env.NODE_ENV === 'development';
+
     // Determine if user can close the modal (if they have already set up the keys or we're in development mode)
-    const canClose = (apiKeys.ezekiaApiKey && apiKeys.openaiApiKey) || process.env.NODE_ENV === 'development';
+    const canClose = (apiKeys.ezekiaApiKey && apiKeys.openaiApiKey) || isDev;
 
     return (
         <div className="modal-overlay">
