@@ -83,3 +83,148 @@
     font-size: var(--font-size-xs);
     overflow-x: auto;
 }
+
+/* Add these styles to your Dashboard.css file if they don't exist */
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: var(--spacing-xl);
+}
+
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+}
+
+.dashboard-title {
+    font-size: var(--font-size-xxl);
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.dashboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.selection-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.selection-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.search-filter-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.filter-button {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-md);
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-md);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.filter-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+}
+
+.assignment-grid, .candidate-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.assignment-card, .candidate-card {
+    background-color: var(--color-card-bg);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-fast);
+    cursor: pointer;
+}
+
+.assignment-card:hover, .candidate-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.assignment-card-header, .candidate-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.assignment-name, .candidate-name {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin: 0;
+}
+
+.assignment-card-content, .candidate-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.assignment-detail {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.detail-icon {
+    color: var(--color-accent-primary);
+}
+
+.assignment-card-footer, .candidate-card-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-view {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: transparent;
+    border: none;
+    color: var(--color-accent-primary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    padding: 0;
+}

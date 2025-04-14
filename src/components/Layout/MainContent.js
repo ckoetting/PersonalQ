@@ -18,15 +18,17 @@ const MainContent = () => {
         <div className="main-content">
             {error && <ErrorMessage message={error} />}
 
-            {!generatedReport ? (
-                <Dashboard />
-            ) : (
-                <ReportDisplay
-                    report={generatedReport}
-                    candidate={selectedCandidate}
-                    assignment={selectedAssignment}
-                />
-            )}
+            <div className="main-content-inner">
+                {!generatedReport ? (
+                    <Dashboard />
+                ) : (
+                    <ReportDisplay
+                        report={generatedReport}
+                        candidate={selectedCandidate}
+                        assignment={selectedAssignment}
+                    />
+                )}
+            </div>
         </div>
     );
 };
