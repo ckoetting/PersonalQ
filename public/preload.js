@@ -1,3 +1,4 @@
+// public/preload.js
 const { contextBridge, ipcRenderer } = require('electron');
 
 console.log('Preload script executing...');
@@ -34,12 +35,7 @@ contextBridge.exposeInMainWorld(
                 };
 
                 // Add each field individually
-                fields.forEach(field => {
-                    if (!requestOptions.fieldsArray) {
-                        requestOptions.fieldsArray = [];
-                    }
-                    requestOptions.fieldsArray.push(field);
-                });
+                requestOptions.fieldsArray = fields;
             }
 
             return ipcRenderer.invoke('ezekia-request', requestOptions);
@@ -47,6 +43,14 @@ contextBridge.exposeInMainWorld(
         testEnvAccess: () => {
             console.log('Calling testEnvAccess from preload');
             return ipcRenderer.invoke('test-env-access');
+        },
+        createTempPdfFile: (data) => {
+            console.log('Calling createTempPdfFile from preload');
+            return ipcRenderer.invoke('create-temp-pdf-file', data);
+        },
+        savePdfFromTemp: (data) => {
+            console.log('Calling savePdfFromTemp from preload');
+            return ipcRenderer.invoke('save-pdf-from-temp', data);
         }
     }
 );

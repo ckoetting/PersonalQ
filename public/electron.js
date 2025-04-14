@@ -1,9 +1,12 @@
+// public/electron.js
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const isDev = require('electron-is-dev');
 const Store = require('electron-store');
 const axios = require('axios');
+const os = require('os');
+const { v4: uuidv4 } = require('uuid');
 
 // Initialize the store for secure API key storage
 Store.initRenderer();
@@ -275,7 +278,7 @@ ipcMain.handle('ezekia-request', async (event, { method, endpoint, params, data,
     }
 });
 
-// Handle saving reports to file
+// Handle saving reports to markdown file
 ipcMain.handle('save-report', async (event, reportData) => {
     try {
         console.log('Handling save-report request');
@@ -305,6 +308,77 @@ ipcMain.handle('save-report', async (event, reportData) => {
         return { success: true, filePath };
     } catch (error) {
         console.error('Failed to save report:', error);
+        return { success: false, message: error.message };
+    }
+});
+
+// Create temp file for PDF
+ipcMain.handle('create-temp-pdf-file', async (event, data) => {
+    try {
+        console.log('Handling create-temp-pdf-file request');
+
+        // Create temporary file path
+        const tempDir = os.tmpdir();
+        const tempFilePath = path.join(tempDir, `temp-pdf-${uuidv4()}.pdf`);
+
+        console.log('Creating temporary file at:', tempFilePath);
+
+        // Convert base64 to buffer
+        const buffer = Buffer.from(data.content, 'base64');
+
+        // Write buffer to temporary file
+        fs.writeFileSync(tempFilePath, buffer);
+        console.log('Temporary file created successfully');
+
+        return { success: true, tempFilePath };
+    } catch (error) {
+        console.error('Failed to create temporary PDF file:', error);
+        return { success: false, message: error.message };
+    }
+});
+
+// Save PDF from temp file
+ipcMain.handle('save-pdf-from-temp', async (event, data) => {
+    try {
+        console.log('Handling save-pdf-from-temp request');
+        const { tempFilePath, candidateName } = data;
+
+        // Check if temp file exists
+        if (!fs.existsSync(tempFilePath)) {
+            throw new Error('Temporary file not found: ' + tempFilePath);
+        }
+
+        // Show save dialog
+        const defaultPath = path.join(
+            app.getPath('documents'),
+            `${candidateName.replace(/[^a-z0-9]/gi, '_')}_Report.pdf`
+        );
+
+        const { filePath, canceled } = await dialog.showSaveDialog({
+            title: 'Save PDF Report',
+            defaultPath: defaultPath,
+            filters: [
+                { name: 'PDF Documents', extensions: ['pdf'] },
+                { name: 'All Files', extensions: ['*'] }
+            ]
+        });
+
+        if (canceled || !filePath) {
+            // Clean up temp file
+            try { fs.unlinkSync(tempFilePath); } catch (e) { console.error('Failed to delete temp file:', e); }
+            return { success: false, message: 'Save cancelled by user' };
+        }
+
+        // Copy temp file to destination
+        fs.copyFileSync(tempFilePath, filePath);
+        console.log('PDF saved successfully to:', filePath);
+
+        // Clean up temp file
+        try { fs.unlinkSync(tempFilePath); } catch (e) { console.error('Failed to delete temp file:', e); }
+
+        return { success: true, filePath };
+    } catch (error) {
+        console.error('Failed to save PDF from temp file:', error);
         return { success: false, message: error.message };
     }
 });

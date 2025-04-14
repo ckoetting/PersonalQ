@@ -1,14 +1,17 @@
-import React from 'react';
+// src/components/Report/ReportDisplay.js
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import ReportGenerator from '../../services/ReportGenerator';
-import { FaDownload, FaEdit, FaArrowLeft } from 'react-icons/fa';
+import PdfGenerator from '../../services/PdfGenerator';
+import { FaDownload, FaFilePdf, FaEdit, FaArrowLeft } from 'react-icons/fa';
 import './ReportDisplay.css';
 
 const ReportDisplay = ({ report, candidate, assignment }) => {
     const { setGeneratedReport, setError } = useApp();
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-    // Handle report download
-    const handleDownload = async () => {
+    // Handle markdown report download
+    const handleMarkdownDownload = async () => {
         try {
             const reportGenerator = new ReportGenerator();
             const markdownContent = reportGenerator.createMarkdownReport(
@@ -25,8 +28,50 @@ const ReportDisplay = ({ report, candidate, assignment }) => {
                 throw new Error(result.message || 'Failed to save report');
             }
         } catch (error) {
-            console.error('Failed to download report:', error);
+            console.error('Failed to download markdown report:', error);
             setError('Failed to download report. Please try again.');
+        }
+    };
+
+    // Handle PDF report generation and download using temp files
+    const handlePdfDownload = async () => {
+        try {
+            setIsGeneratingPdf(true);
+
+            // Create PDF generator
+            const pdfGenerator = new PdfGenerator();
+
+            // Generate PDF as base64 string
+            const base64Content = await pdfGenerator.generatePdfBuffer(
+                report.candidateData,
+                report.reportSections,
+                assignment
+            );
+
+            // Create temporary file
+            const tempResult = await window.api.createTempPdfFile({
+                content: base64Content
+            });
+
+            if (!tempResult.success) {
+                throw new Error(tempResult.message || 'Failed to create temporary PDF file');
+            }
+
+            // Save from temporary file
+            const saveResult = await window.api.savePdfFromTemp({
+                tempFilePath: tempResult.tempFilePath,
+                candidateName: report.candidateData.personal_data.name
+            });
+
+            if (!saveResult.success) {
+                throw new Error(saveResult.message || 'Failed to save PDF');
+            }
+
+        } catch (error) {
+            console.error('Failed to generate PDF:', error);
+            setError('Failed to generate PDF report. Please try again.');
+        } finally {
+            setIsGeneratingPdf(false);
         }
     };
 
@@ -54,8 +99,18 @@ const ReportDisplay = ({ report, candidate, assignment }) => {
                     <button className="action-button edit-button" onClick={handleEditClick}>
                         <FaEdit /> Edit
                     </button>
-                    <button className="action-button download-button" onClick={handleDownload}>
-                        <FaDownload /> Download
+                    <button
+                        className="action-button download-button"
+                        onClick={handleMarkdownDownload}
+                    >
+                        <FaDownload /> Markdown
+                    </button>
+                    <button
+                        className="action-button download-button pdf-button"
+                        onClick={handlePdfDownload}
+                        disabled={isGeneratingPdf}
+                    >
+                        <FaFilePdf /> {isGeneratingPdf ? 'Generating...' : 'PDF'}
                     </button>
                 </div>
             </div>
