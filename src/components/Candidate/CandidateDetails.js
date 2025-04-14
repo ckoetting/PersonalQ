@@ -14,10 +14,12 @@ const CandidateDetails = ({ candidate }) => {
             if (!candidate || !apiKeys.ezekiaApiKey) return;
 
             setLoading({ ...loading, candidateDetails: true });
+            console.log(`Fetching details for candidate ${candidate.id}`);
 
             try {
                 const reportGenerator = new ReportGenerator(apiKeys.ezekiaApiKey, apiKeys.openaiApiKey);
                 const data = await reportGenerator.ezekiaClient.getAllCandidateData(candidate.id);
+                console.log("Candidate data received:", data);
                 setCandidateData(data);
             } catch (error) {
                 console.error('Failed to fetch candidate details:', error);
@@ -64,9 +66,17 @@ const CandidateDetails = ({ candidate }) => {
                     <div className="candidate-header-info">
                         <div className="candidate-avatar-large">
                             {personal_data.photo ? (
-                                <img src={personal_data.photo} alt={personal_data.name} />
+                                <img
+                                    src={personal_data.photo}
+                                    alt={personal_data.name}
+                                    onError={(e) => {
+                                        console.error("Error loading candidate photo, fallback to icon");
+                                        e.target.style.display = 'none';
+                                        e.target.parentNode.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"><FaUser size={32} /></div>';
+                                    }}
+                                />
                             ) : (
-                                <FaUser />
+                                <FaUser size={32} />
                             )}
                         </div>
 
@@ -75,7 +85,7 @@ const CandidateDetails = ({ candidate }) => {
 
                             {experience && experience.length > 0 && (
                                 <div className="candidate-current-position">
-                                    {experience[0].title} at {experience[0].company}
+                                    {experience[0].title || 'No title'} at {experience[0].company || 'No company'}
                                 </div>
                             )}
 
@@ -112,9 +122,9 @@ const CandidateDetails = ({ candidate }) => {
                             experience.map((exp, index) => (
                                 <div className="experience-item" key={index}>
                                     <div className="experience-header">
-                                        <div className="experience-title">{exp.title}</div>
-                                        <div className="experience-company">{exp.company}</div>
-                                        <div className="experience-years">{exp.years}</div>
+                                        <div className="experience-title">{exp.title || 'No title'}</div>
+                                        <div className="experience-company">{exp.company || 'No company'}</div>
+                                        <div className="experience-years">{exp.years || 'No date information'}</div>
                                     </div>
 
                                     {exp.description && (
@@ -140,9 +150,9 @@ const CandidateDetails = ({ candidate }) => {
                             education.map((edu, index) => (
                                 <div className="education-item" key={index}>
                                     <div className="education-header">
-                                        <div className="education-degree">{edu.degree}</div>
-                                        <div className="education-institution">{edu.institution}</div>
-                                        <div className="education-years">{edu.years}</div>
+                                        <div className="education-degree">{edu.degree || 'No degree information'}</div>
+                                        <div className="education-institution">{edu.institution || 'No institution information'}</div>
+                                        <div className="education-years">{edu.years || 'No date information'}</div>
                                     </div>
 
                                     {edu.field && (

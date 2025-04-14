@@ -211,8 +211,8 @@ ipcMain.handle('save-api-keys', (event, { ezekiaApiKey, openaiApiKey }) => {
     }
 });
 
-// Handle Ezekia API requests
-ipcMain.handle('ezekia-request', async (event, { method, endpoint, params, data }) => {
+// Handle Ezekia API requests - UPDATED to handle fields[] correctly
+ipcMain.handle('ezekia-request', async (event, { method, endpoint, params, data, fieldsArray }) => {
     try {
         // Get API key from store or environment
         const ezekiaApiKey = store.get('ezekiaApiKey') || process.env.EZEKIA_API_KEY || '';
@@ -226,6 +226,16 @@ ipcMain.handle('ezekia-request', async (event, { method, endpoint, params, data 
 
         console.log(`Making ${method} request to ${url}`);
 
+        // Handle fields[] parameter correctly
+        if (fieldsArray && fieldsArray.length > 0) {
+            console.log('Processing fields array:', fieldsArray);
+            // Convert fieldsArray to correct URL parameters - append multiple fields[] parameters
+            if (!params) params = {};
+            params['fields[]'] = fieldsArray;
+        }
+
+        console.log('Request params:', params);
+
         const response = await axios({
             method,
             url,
@@ -235,15 +245,32 @@ ipcMain.handle('ezekia-request', async (event, { method, endpoint, params, data 
                 'Accept': 'application/json'
             },
             params,
-            data
+            data,
+            paramsSerializer: function(params) {
+                // Convert params object to URL query string format, handling arrays correctly
+                let parts = [];
+                for (let key in params) {
+                    if (Array.isArray(params[key])) {
+                        // For arrays like fields[], add multiple entries with the same key
+                        params[key].forEach(value => {
+                            parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+                        });
+                    } else {
+                        parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
+                    }
+                }
+                return parts.join('&');
+            }
         });
 
         return response.data;
     } catch (error) {
         console.error(`Ezekia API Error (${endpoint}):`, error);
+        console.error('Error details:', error.response?.data || error.message);
+
         return {
             error: true,
-            message: error.response?.data?.message || 'Failed to fetch data from Ezekia'
+            message: error.response?.data?.message || error.message || 'Failed to fetch data from Ezekia'
         };
     }
 });

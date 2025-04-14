@@ -22,7 +22,26 @@ contextBridge.exposeInMainWorld(
             return ipcRenderer.invoke('save-api-keys', keys);
         },
         ezekiaRequest: (requestOptions) => {
-            console.log('Calling ezekiaRequest from preload');
+            console.log('Calling ezekiaRequest from preload for endpoint:', requestOptions.endpoint);
+
+            // Fix for handling array of fields - convert to multiple params with same name
+            if (requestOptions.params && requestOptions.params['fields[]'] && Array.isArray(requestOptions.params['fields[]'])) {
+                console.log('Converting fields array to multiple params');
+                const fields = requestOptions.params['fields[]'];
+                delete requestOptions.params['fields[]'];
+                requestOptions.params = {
+                    ...requestOptions.params
+                };
+
+                // Add each field individually
+                fields.forEach(field => {
+                    if (!requestOptions.fieldsArray) {
+                        requestOptions.fieldsArray = [];
+                    }
+                    requestOptions.fieldsArray.push(field);
+                });
+            }
+
             return ipcRenderer.invoke('ezekia-request', requestOptions);
         },
         testEnvAccess: () => {

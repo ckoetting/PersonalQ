@@ -41,66 +41,123 @@ class EzekiaClient {
         }
     }
 
-    // Fetch all assignments
+    // Fetch all assignments - UPDATED to use V2 endpoint with correct fields format
     async getAssignments(limit = 100) {
-        const response = await this.request('GET', 'projects', {
+        console.log('Fetching assignments using V2 endpoint');
+        const params = {
             isAssignment: true,
             count: limit,
             sortBy: 'updatedAt',
             sortOrder: 'desc'
-        });
+        };
+
+        // Add fields individually - this fixes the format issue
+        params['fields[]'] = 'name';
+        params['fields[]'] = 'status';
+        params['fields[]'] = 'client';
+        params['fields[]'] = 'contactPerson';
+        params['fields[]'] = 'createdAt';
+        params['fields[]'] = 'description';
+        params['fields[]'] = 'candidates_count';
+
+        const response = await this.request('GET', 'projects', params);
 
         return response.data || [];
     }
 
-    // Fetch candidates for a specific assignment
+    // Fetch candidates for a specific assignment - UPDATED to use correct fields format
     async getCandidates(assignmentId, limit = 100) {
-        const response = await this.request('GET', `projects/${assignmentId}/candidates`, {
+        console.log(`Fetching candidates for assignment ${assignmentId}`);
+        const params = {
             count: limit,
             sortBy: 'updatedAt',
             sortOrder: 'desc'
-        });
+        };
+
+        // Add fields individually
+        params['fields[]'] = 'id';
+        params['fields[]'] = 'name';
+        params['fields[]'] = 'firstName';
+        params['fields[]'] = 'lastName';
+        params['fields[]'] = 'photo';
+        params['fields[]'] = 'positions';
+        params['fields[]'] = 'status';
+        params['fields[]'] = 'experience_years';
+
+        const response = await this.request('GET', `projects/${assignmentId}/candidates`, params);
 
         return response.data || [];
     }
 
-    // Get detailed information about a candidate
+    // Get detailed information about a candidate - UPDATED with correct fields format
     async getCandidate(personId) {
-        const response = await this.request('GET', `v2/people/${personId}`, {
-            fields: 'name,firstName,lastName,emails,phones,address,birthday,maritalStatus,nationality,languages,photo'
-        });
+        console.log(`Fetching detailed candidate info for person ${personId}`);
+        const params = {};
+
+        // Add fields individually
+        params['fields[]'] = 'name';
+        params['fields[]'] = 'firstName';
+        params['fields[]'] = 'lastName';
+        params['fields[]'] = 'emails';
+        params['fields[]'] = 'phones';
+        params['fields[]'] = 'address';
+        params['fields[]'] = 'birthday';
+        params['fields[]'] = 'maritalStatus';
+        params['fields[]'] = 'nationality';
+        params['fields[]'] = 'languages';
+        params['fields[]'] = 'photo';
+
+        const response = await this.request('GET', `v2/people/${personId}`, params);
 
         return response.data || {};
     }
 
     // Get work experience/positions for a candidate
     async getPositions(personId) {
-        const response = await this.request('GET', `v2/people/${personId}/positions`, {
+        console.log(`Fetching positions for person ${personId}`);
+        const params = {
             sortBy: 'startDate',
             sortOrder: 'desc'
-        });
+        };
+
+        const response = await this.request('GET', `v2/people/${personId}/positions`, params);
 
         return response.data || [];
     }
 
     // Get education history for a candidate
     async getEducation(personId) {
-        const response = await this.request('GET', `people/${personId}/education`, {
+        console.log(`Fetching education for person ${personId}`);
+        const params = {
             sortBy: 'start',
             sortOrder: 'desc'
-        });
+        };
+
+        const response = await this.request('GET', `people/${personId}/education`, params);
 
         return response.data || [];
     }
 
     // Get project/assignment details
     async getProject(projectId) {
-        const response = await this.request('GET', `projects/${projectId}`);
+        console.log(`Fetching project details for project ${projectId}`);
+        const params = {};
+
+        // Add fields individually
+        params['fields[]'] = 'name';
+        params['fields[]'] = 'status';
+        params['fields[]'] = 'client';
+        params['fields[]'] = 'contactPerson';
+        params['fields[]'] = 'createdAt';
+        params['fields[]'] = 'description';
+
+        const response = await this.request('GET', `projects/${projectId}`, params);
         return response.data || {};
     }
 
     // Get all data needed for a candidate report
     async getAllCandidateData(personId, projectId = null) {
+        console.log(`Getting all candidate data for person ${personId}`);
         // Get basic candidate data
         const candidate = await this.getCandidate(personId);
 

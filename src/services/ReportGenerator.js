@@ -29,7 +29,25 @@ class ReportGenerator {
         try {
             const assignments = await this.ezekiaClient.getAssignments();
             console.log(`ReportGenerator: Received ${assignments?.length || 0} assignments`);
-            return assignments;
+
+            if (!assignments || assignments.length === 0) {
+                console.log("ReportGenerator: No assignments returned from API");
+                return [];
+            }
+
+            // Process assignments to ensure they have all required fields
+            return assignments.map(assignment => ({
+                id: assignment.id,
+                name: assignment.name || 'Unnamed Assignment',
+                status: assignment.status || 'Unknown',
+                client: {
+                    name: assignment.client?.name || 'No Client'
+                },
+                contactPerson: assignment.contactPerson || 'N/A',
+                createdAt: assignment.createdAt || new Date().toISOString(),
+                description: assignment.description || 'No description available.',
+                candidates_count: assignment.candidates_count || 0
+            }));
         } catch (error) {
             console.error("ReportGenerator: Error fetching assignments:", error);
             throw error;
@@ -42,7 +60,21 @@ class ReportGenerator {
         try {
             const candidates = await this.ezekiaClient.getCandidates(assignmentId);
             console.log(`ReportGenerator: Received ${candidates?.length || 0} candidates`);
-            return candidates;
+
+            if (!candidates || candidates.length === 0) {
+                console.log("ReportGenerator: No candidates returned from API");
+                return [];
+            }
+
+            // Process candidates to ensure they have all required fields
+            return candidates.map(candidate => ({
+                id: candidate.id,
+                name: candidate.name || `${candidate.firstName || ''} ${candidate.lastName || ''}`.trim() || 'Unknown',
+                status: candidate.status || 'Active',
+                photo: candidate.photo || '',
+                positions: candidate.positions || [],
+                experience_years: candidate.experience_years || 'N/A'
+            }));
         } catch (error) {
             console.error("ReportGenerator: Error fetching candidates:", error);
             throw error;

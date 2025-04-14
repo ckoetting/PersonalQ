@@ -25,24 +25,39 @@ const AssignmentList = () => {
             if (!apiKeys.ezekiaApiKey) return;
 
             setLoading({ ...loading, assignments: true });
+            console.log("Fetching assignments...");
 
             try {
                 const reportGenerator = new ReportGenerator(apiKeys.ezekiaApiKey, apiKeys.openaiApiKey);
+                console.log("ReportGenerator created, calling fetchAssignments()");
+
                 const result = await reportGenerator.fetchAssignments();
-                setAssignments(result);
-                setFilteredAssignments(result);
+                console.log("Assignments fetched:", result?.length || 0);
+
+                if (result && result.length > 0) {
+                    console.log("Sample assignment data:", result[0]);
+                    setAssignments(result);
+                    setFilteredAssignments(result);
+                } else {
+                    console.log("No assignments returned from API");
+                    setAssignments([]);
+                    setFilteredAssignments([]);
+                }
             } catch (error) {
                 console.error('Failed to fetch assignments:', error);
-                setError('Failed to fetch assignments. Please check your API key and try again.');
+                setError('Failed to fetch assignments: ' + error.message);
+                setAssignments([]);
+                setFilteredAssignments([]);
             } finally {
                 setLoading({ ...loading, assignments: false });
+                console.log("Assignment loading complete");
             }
         };
 
         fetchAssignments();
     }, [apiKeys.ezekiaApiKey]);
 
-    // Filter assignments based on search term - FIXED
+    // Filter assignments based on search term
     useEffect(() => {
         if (!searchTerm.trim()) {
             setFilteredAssignments(assignments);
@@ -60,7 +75,18 @@ const AssignmentList = () => {
 
     // Handle assignment selection
     const handleAssignmentClick = (assignment) => {
+        console.log("Assignment selected:", assignment);
         setSelectedAssignment(assignment);
+    };
+
+    // Helper function to safely format date
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'N/A';
+        try {
+            return new Date(dateStr).toLocaleDateString();
+        } catch (e) {
+            return 'Invalid Date';
+        }
     };
 
     return (
@@ -74,7 +100,7 @@ const AssignmentList = () => {
             {loading.assignments ? (
                 <LoadingSpinner />
             ) : filteredAssignments.length === 0 ? (
-                <p className="no-results">No assignments found</p>
+                <p className="no-results">No assignments found. Please check your API key and permissions.</p>
             ) : (
                 <ul className="assignment-items">
                     {filteredAssignments.map(assignment => (
@@ -86,9 +112,9 @@ const AssignmentList = () => {
                             <div className="assignment-name">{assignment.name || 'Unnamed Assignment'}</div>
                             <div className="assignment-client">{assignment.client?.name || 'No Client'}</div>
                             <div className="assignment-status">
-                <span className={`status-badge status-${(assignment.status || 'unknown').toLowerCase()}`}>
-                  {assignment.status || 'Unknown'}
-                </span>
+                                <span className={`status-badge status-${(assignment.status || 'unknown').toLowerCase()}`}>
+                                    {assignment.status || 'Unknown'}
+                                </span>
                             </div>
                         </li>
                     ))}
