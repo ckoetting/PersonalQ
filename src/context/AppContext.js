@@ -33,7 +33,12 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         const getKeys = async () => {
             try {
+                console.log('Fetching API keys from storage/env');
                 const keys = await window.api.getApiKeys();
+                console.log('Keys received:', {
+                    ezekiaApiKey: keys.ezekiaApiKey ? 'Found' : 'Not found',
+                    openaiApiKey: keys.openaiApiKey ? 'Found' : 'Not found'
+                });
 
                 // Only update if we have at least one key or both are empty
                 if (keys.ezekiaApiKey || keys.openaiApiKey ||
@@ -53,9 +58,22 @@ export const AppProvider = ({ children }) => {
     // Save API keys
     const saveApiKeys = async (newKeys) => {
         try {
-            await window.api.saveApiKeys(newKeys);
-            setApiKeys(newKeys);
-            return true;
+            console.log('Saving API keys:', {
+                ezekiaApiKey: newKeys.ezekiaApiKey ? 'Provided' : 'Not provided',
+                openaiApiKey: newKeys.openaiApiKey ? 'Provided' : 'Not provided'
+            });
+
+            const result = await window.api.saveApiKeys(newKeys);
+
+            if (result.success) {
+                console.log('API keys saved successfully');
+                setApiKeys(newKeys);
+                return true;
+            } else {
+                console.error('Failed to save API keys:', result.message);
+                setError(result.message || 'Failed to save API keys. Please try again.');
+                return false;
+            }
         } catch (error) {
             console.error('Failed to save API keys:', error);
             setError('Failed to save API keys. Please try again.');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import './ApiKeyModal.css';
 
@@ -10,8 +10,17 @@ const ApiKeyModal = ({ isOpen, onClose }) => {
         openaiApiKey: apiKeys.openaiApiKey || ''
     });
 
+    // Update form data when API keys change
+    useEffect(() => {
+        setFormData({
+            ezekiaApiKey: apiKeys.ezekiaApiKey || '',
+            openaiApiKey: apiKeys.openaiApiKey || ''
+        });
+    }, [apiKeys]);
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     if (!isOpen) return null;
 
@@ -19,6 +28,10 @@ const ApiKeyModal = ({ isOpen, onClose }) => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+
+        // Clear any existing messages
+        setError('');
+        setSuccessMessage('');
     };
 
     // Handle form submission
@@ -26,16 +39,28 @@ const ApiKeyModal = ({ isOpen, onClose }) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setSuccessMessage('');
 
         try {
+            console.log('Submitting API keys:', {
+                ezekiaApiKey: formData.ezekiaApiKey ? 'Provided' : 'Not provided',
+                openaiApiKey: formData.openaiApiKey ? 'Provided' : 'Not provided'
+            });
+
             const result = await saveApiKeys(formData);
 
             if (result) {
-                onClose();
+                setSuccessMessage('API keys saved successfully!');
+
+                // Wait a moment before closing the modal
+                setTimeout(() => {
+                    onClose();
+                }, 1500);
             } else {
-                throw new Error('Failed to save API keys');
+                throw new Error('Failed to save API keys. Please check your entries and try again.');
             }
         } catch (error) {
+            console.error('API key save error:', error);
             setError(error.message || 'Failed to save API keys. Please try again.');
         } finally {
             setLoading(false);
@@ -66,6 +91,7 @@ const ApiKeyModal = ({ isOpen, onClose }) => {
                     </p>
 
                     {error && <div className="error-message">{error}</div>}
+                    {successMessage && <div className="success-message">{successMessage}</div>}
 
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">

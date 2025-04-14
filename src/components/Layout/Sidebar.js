@@ -25,7 +25,6 @@ const Sidebar = () => {
             <div className="sidebar-header">
                 <div className="logo">
                     <span className="logo-icon">P</span>
-                    <h1>PersonalQ</h1>
                 </div>
             </div>
 
@@ -34,22 +33,14 @@ const Sidebar = () => {
                     <div
                         key={index}
                         className={`nav-item ${item.active ? 'active' : ''}`}
+                        title={item.name}
                     >
                         <div className="nav-icon">{item.icon}</div>
-                        <span className="nav-label">{item.name}</span>
                     </div>
                 ))}
             </div>
 
             <div className="sidebar-footer">
-                <div className="api-status">
-                    <div className={`status-indicator ${apiKeys.ezekiaApiKey ? 'connected' : 'disconnected'}`}>
-                        Ezekia API: {apiKeys.ezekiaApiKey ? 'Connected' : 'Not Connected'}
-                    </div>
-                    <div className={`status-indicator ${apiKeys.openaiApiKey ? 'connected' : 'disconnected'}`}>
-                        OpenAI API: {apiKeys.openaiApiKey ? 'Connected' : 'Not Connected'}
-                    </div>
-                </div>
                 <button
                     className="settings-button"
                     onClick={handleSettingsClick}
@@ -57,7 +48,6 @@ const Sidebar = () => {
                 >
                     <FaCog />
                 </button>
-                <p className="version">v1.0.0</p>
             </div>
         </div>
     );
