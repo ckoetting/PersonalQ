@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 class ReportTextGenerator {
-    constructor(apiKey, model = 'gpt-3.5-turbo') {
+    constructor(apiKey, model = 'gpt-4.1') {
         this.apiKey = apiKey;
         this.model = model;
         this.baseUrl = 'https://api.openai.com/v1';
@@ -32,7 +32,7 @@ class ReportTextGenerator {
                         }
                     ],
                     temperature: 0.7,
-                    max_tokens: 1500
+                    max_tokens: 5000
                 },
                 {
                     headers: {
