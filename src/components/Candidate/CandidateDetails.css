@@ -159,3 +159,92 @@
     padding: var(--spacing-xxl) 0;
     color: var(--color-text-secondary);
 }
+
+/* Add this to CandidateList.css and CandidateDetails.css */
+.candidate-avatar, .candidate-avatar-large {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-accent-primary);
+}
+
+.candidate-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.candidate-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+}
+
+.candidate-avatar img, .candidate-avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This makes the image cover the area while maintaining aspect ratio */
+    object-position: center; /* Center the image */
+}
+
+/* Add fallback icon styles */
+.avatar-fallback-icon {
+    color: var(--color-text-primary);
+    font-size: 18px; /* for small avatar */
+}
+
+.avatar-fallback-icon-large {
+    color: var(--color-text-primary);
+    font-size: 32px; /* for large avatar */
+}
+
+/* Add to CandidateList.css and CandidateDetails.css */
+.candidate-card {
+    /* ... existing styles ... */
+    position: relative;
+}
+
+.candidate-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.candidate-photo-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background-color: var(--color-accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.candidate-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This ensures the image covers the container while maintaining aspect ratio */
+    object-position: center top; /* Focus on the face/top part of the image */
+}
+
+.candidate-fallback-icon {
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* For the smaller photos in lists */
+.candidate-item .candidate-photo-container {
+    width: 48px;
+    height: 48px;
+}
+
+.candidate-item .candidate-fallback-icon {
+    font-size: 20px;
+}

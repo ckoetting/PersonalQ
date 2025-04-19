@@ -36,12 +36,14 @@ class ReportGenerator {
             }
 
             // Process assignments to ensure they have all required fields
+            // In ReportGenerator.js - fetchAssignments method
             return assignments.map(assignment => ({
                 id: assignment.id,
                 name: assignment.name || 'Unnamed Assignment',
                 status: assignment.status || 'Unknown',
                 client: {
-                    name: assignment.client?.name || 'No Client'
+                    name: assignment.relationships?.company?.name || 'No Client',
+                    logo: assignment.relationships?.company?.image?.url || null // Add the logo URL
                 },
                 contactPerson: assignment.contactPerson || 'N/A',
                 createdAt: assignment.createdAt || new Date().toISOString(),
@@ -71,8 +73,8 @@ class ReportGenerator {
                 id: candidate.id,
                 name: candidate.name || `${candidate.firstName || ''} ${candidate.lastName || ''}`.trim() || 'Unknown',
                 status: candidate.status || 'Active',
-                photo: candidate.photo || '',
-                positions: candidate.positions || [],
+                photo: candidate.profilePicture || '', // Use the correct field
+                positions: candidate.profile?.positions || [],
                 experience_years: candidate.experience_years || 'N/A'
             }));
         } catch (error) {

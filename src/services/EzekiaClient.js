@@ -21,8 +21,14 @@ class EzekiaClient {
     }
 
     // Base request method - updated to use IPC
+    // In EzekiaClient.js - request method
     async request(method, endpoint, params = {}, data = null) {
         try {
+            console.log(`API Request: ${method} ${endpoint}`, {
+                params: JSON.stringify(params),
+                data: data ? 'Has data' : 'No data'
+            });
+
             const response = await window.api.ezekiaRequest({
                 method,
                 endpoint,
@@ -31,8 +37,15 @@ class EzekiaClient {
             });
 
             if (response.error) {
+                console.error(`API Error (${endpoint}):`, response.message);
                 throw new Error(response.message);
             }
+
+            console.log(`API Response (${endpoint}): Success with ${
+                Array.isArray(response)
+                    ? `${response.length} items`
+                    : (response.data ? `${Array.isArray(response.data) ? response.data.length : 1} items` : 'no data')
+            }`);
 
             return response;
         } catch (error) {
@@ -41,7 +54,8 @@ class EzekiaClient {
         }
     }
 
-    // Fetch all assignments - UPDATED to use V2 endpoint with correct fields format
+// In EzekiaClient.js - getAssignments method
+    // In EzekiaClient.js - getAssignments method
     async getAssignments(limit = 100) {
         console.log('Fetching assignments using V2 endpoint');
         const params = {
@@ -51,21 +65,21 @@ class EzekiaClient {
             sortOrder: 'desc'
         };
 
-        // Add fields individually - this fixes the format issue
+        // Add fields with correct relationship paths
         params['fields[]'] = 'name';
         params['fields[]'] = 'status';
-        params['fields[]'] = 'client';
+        params['fields[]'] = 'relationships.company'; // This is the correct path
         params['fields[]'] = 'contactPerson';
         params['fields[]'] = 'createdAt';
         params['fields[]'] = 'description';
         params['fields[]'] = 'candidates_count';
 
         const response = await this.request('GET', 'projects', params);
-
         return response.data || [];
     }
 
     // Fetch candidates for a specific assignment - UPDATED to use correct fields format
+    // In EzekiaClient.js - getCandidates method
     async getCandidates(assignmentId, limit = 100) {
         console.log(`Fetching candidates for assignment ${assignmentId}`);
         const params = {
@@ -74,18 +88,17 @@ class EzekiaClient {
             sortOrder: 'desc'
         };
 
-        // Add fields individually
+        // Add the correct fields based on API response
         params['fields[]'] = 'id';
         params['fields[]'] = 'name';
         params['fields[]'] = 'firstName';
         params['fields[]'] = 'lastName';
-        params['fields[]'] = 'photo';
-        params['fields[]'] = 'positions';
+        params['fields[]'] = 'profilePicture'; // This is the correct field name
+        params['fields[]'] = 'profile.positions'; // This is where work experience is stored
         params['fields[]'] = 'status';
         params['fields[]'] = 'experience_years';
 
         const response = await this.request('GET', `projects/${assignmentId}/candidates`, params);
-
         return response.data || [];
     }
 
@@ -115,27 +128,76 @@ class EzekiaClient {
     // Get work experience/positions for a candidate
     async getPositions(personId) {
         console.log(`Fetching positions for person ${personId}`);
+
+        // First try to get the complete profile
+        const candidate = await this.getCandidate(personId);
+
+        // Check if positions are already in the data
+        if (candidate && candidate.profile && candidate.profile.positions) {
+            console.log(`Found ${candidate.profile.positions.length} positions in profile data`);
+            return candidate.profile.positions;
+        }
+
+        // If not, try the dedicated endpoint
         const params = {
             sortBy: 'startDate',
             sortOrder: 'desc'
         };
 
         const response = await this.request('GET', `v2/people/${personId}/positions`, params);
+        console.log(`Positions fetched from dedicated endpoint: ${response.data?.length || 0}`);
 
         return response.data || [];
     }
 
     // Get education history for a candidate
+    // In EzekiaClient.js - getEducation method
     async getEducation(personId) {
         console.log(`Fetching education for person ${personId}`);
+
+        // Try to extract education from position summaries (as a fallback)
+        const positions = await this.getPositions(personId);
+        const educationEntries = [];
+
+        // Check each position summary for education-related content
+        for (const pos of positions) {
+            if (pos.summary &&
+                (pos.summary.toLowerCase().includes('ausbildung') ||
+                    pos.summary.toLowerCase().includes('studium') ||
+                    pos.summary.toLowerCase().includes('universität') ||
+                    pos.summary.toLowerCase().includes('schule'))) {
+
+                // This is a basic approach - in production you might want something more sophisticated
+                educationEntries.push({
+                    years: pos.startDate ? `${pos.startDate.substr(0, 4)} - ${pos.endDate === '9999-12-31' ? 'Present' : pos.endDate?.substr(0, 4) || 'Present'}` : '',
+                    degree: 'Education/Training',
+                    institution: pos.company?.name || '',
+                    field: pos.title || '',
+                    description: pos.summary || ''
+                });
+            }
+        }
+
+        // If we found some education entries from the summaries, return them
+        if (educationEntries.length > 0) {
+            console.log(`Extracted ${educationEntries.length} education entries from position summaries`);
+            return educationEntries;
+        }
+
+        // Otherwise, try the dedicated endpoint as a fallback
         const params = {
             sortBy: 'start',
             sortOrder: 'desc'
         };
 
-        const response = await this.request('GET', `people/${personId}/education`, params);
-
-        return response.data || [];
+        try {
+            const response = await this.request('GET', `people/${personId}/education`, params);
+            console.log(`Education fetched from dedicated endpoint: ${response.data?.length || 0}`);
+            return response.data || [];
+        } catch (error) {
+            console.log('Education endpoint returned error, using empty array as fallback');
+            return [];
+        }
     }
 
     // Get project/assignment details
@@ -326,10 +388,10 @@ class EzekiaClient {
 
         for (const pos of positions) {
             const entry = {
-                years: `${pos.startDate || ''} - ${pos.endDate || 'Present'}`,
+                years: `${pos.startDate || ''} - ${pos.endDate === '9999-12-31' ? 'Present' : pos.endDate || 'Present'}`,
                 title: pos.title || '',
                 company: pos.company?.name || '',
-                description: pos.description || ''
+                description: pos.summary || ''
             };
 
             result.push(entry);

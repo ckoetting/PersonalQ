@@ -127,13 +127,19 @@ const CandidateList = ({ assignmentId }) => {
                                         src={candidate.photo}
                                         alt={candidate.name}
                                         onError={(e) => {
-                                            console.log("Failed to load candidate photo, falling back to icon");
+                                            console.log("Failed to load candidate photo:", candidate.photo);
                                             e.target.style.display = 'none';
-                                            e.target.parentNode.innerHTML = '<div class="user-icon-fallback"><FaUser /></div>';
+                                            // Use a cleaner approach to render the fallback icon
+                                            const iconContainer = document.createElement('div');
+                                            iconContainer.className = 'avatar-fallback-icon';
+                                            iconContainer.innerHTML = '<i class="fa fa-user"></i>'; // Assuming you're using FontAwesome
+                                            e.target.parentNode.appendChild(iconContainer);
                                         }}
                                     />
                                 ) : (
-                                    <FaUser />
+                                    <div className="avatar-fallback-icon">
+                                        <FaUser />
+                                    </div>
                                 )}
                             </div>
                             <div className="candidate-info">

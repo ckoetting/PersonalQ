@@ -70,13 +70,18 @@ const CandidateDetails = ({ candidate }) => {
                                     src={personal_data.photo}
                                     alt={personal_data.name}
                                     onError={(e) => {
-                                        console.error("Error loading candidate photo, fallback to icon");
+                                        console.log("Failed to load candidate photo:", personal_data.photo);
                                         e.target.style.display = 'none';
-                                        e.target.parentNode.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"><FaUser size={32} /></div>';
+                                        const iconContainer = document.createElement('div');
+                                        iconContainer.className = 'avatar-fallback-icon-large';
+                                        iconContainer.innerHTML = '<i class="fa fa-user"></i>';
+                                        e.target.parentNode.appendChild(iconContainer);
                                     }}
                                 />
                             ) : (
-                                <FaUser size={32} />
+                                <div className="avatar-fallback-icon-large">
+                                    <FaUser />
+                                </div>
                             )}
                         </div>
 

@@ -370,10 +370,22 @@ const Dashboard = () => {
                                                 onClick={() => handleAssignmentClick(assignment)}
                                             >
                                                 <div className="assignment-card-header">
+                                                    {assignment.client?.logo && (
+                                                        <div className="company-logo">
+                                                            <img
+                                                                src={assignment.client.logo}
+                                                                alt={`${assignment.client.name} logo`}
+                                                                onError={(e) => {
+                                                                    console.log("Failed to load company logo");
+                                                                    e.target.style.display = 'none';
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
                                                     <h3 className="assignment-name">{assignment.name || 'Unnamed Assignment'}</h3>
                                                     <span className={`status-badge status-${(assignment.status || 'unknown').toLowerCase()}`}>
-                                                    {assignment.status || 'Unknown'}
-                                                </span>
+        {assignment.status || 'Unknown'}
+    </span>
                                                 </div>
 
                                                 <div className="assignment-card-content">
