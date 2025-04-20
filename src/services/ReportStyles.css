@@ -1,0 +1,210 @@
+/* src/services/ReportStyles.css */
+
+/* Base styles for report */
+/*@font-face {*/
+/*    font-family: 'Inter';*/
+/*    src: url('../../') format('truetype');*/
+/*    font-weight: normal;*/
+/*    font-style: normal;*/
+/*}*/
+
+/*@font-face {*/
+/*    font-family: 'Inter';*/
+/*    src: url('../assets/fonts/Inter-Bold.ttf') format('truetype');*/
+/*    font-weight: bold;*/
+/*    font-style: normal;*/
+/*}*/
+
+/*@font-face {*/
+/*    font-family: 'Inter';*/
+/*    src: url('../assets/fonts/Inter-Light.ttf') format('truetype');*/
+/*    font-weight: 300;*/
+/*    font-style: normal;*/
+/*}*/
+
+/* Print-specific styles */
+@media print {
+    @page {
+        size: A4;
+        margin: 20mm;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .page {
+        page-break-after: always;
+    }
+
+    .page:last-child {
+        page-break-after: avoid;
+    }
+}
+
+/* Base styling */
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.4;
+    color: #000000;
+    margin: 0;
+    padding: 0;
+}
+
+/* Common page elements */
+.page {
+    position: relative;
+    min-height: 257mm; /* A4 height minus margins */
+    width: 170mm; /* A4 width minus margins */
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.header {
+    border-bottom: 1pt solid #cccccc;
+    padding-bottom: 5pt;
+    margin-bottom: 10pt;
+    font-size: 9pt;
+    color: #333333;
+}
+
+/* Section titles */
+.section-title {
+    font-size: 13pt;
+    font-weight: bold;
+    margin-bottom: 10pt;
+    padding-bottom: 5pt;
+    border-bottom: 1pt solid #cccccc;
+}
+
+.subsection-title {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 15pt;
+    margin-bottom: 5pt;
+}
+
+/* Cover page elements */
+.company-info {
+    font-size: 9pt;
+    color: #333333;
+    line-height: 1.4;
+}
+
+.company-info p {
+    margin: 3pt 0;
+}
+
+.offices {
+    font-size: 8pt;
+    color: #333333;
+    margin-top: 20pt;
+}
+
+.cover-title {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-top: 100pt;
+    margin-bottom: 10pt;
+}
+
+.cover-subtitle {
+    font-size: 14pt;
+    margin-bottom: 40pt;
+    font-weight: bold;
+}
+
+.cover-info {
+    font-size: 12pt;
+    margin-bottom: 5pt;
+}
+
+.confidentiality-text {
+    font-size: 9pt;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    color: #333333;
+    text-align: justify;
+}
+
+.confidentiality-text p {
+    margin: 5pt 0;
+}
+
+/* Information tables */
+.info-table {
+    width: 100%;
+    margin-bottom: 15pt;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 4pt;
+}
+
+.info-label {
+    width: 30%;
+    font-weight: bold;
+}
+
+.info-value {
+    width: 70%;
+}
+
+/* Experience items */
+.experience-item {
+    margin-bottom: 15pt;
+}
+
+.date-company-row {
+    display: flex;
+    margin-bottom: 3pt;
+}
+
+.dates {
+    width: 20%;
+    font-weight: bold;
+}
+
+.company {
+    width: 80%;
+    font-weight: bold;
+}
+
+.job-title {
+    margin-left: 20%;
+    margin-bottom: 3pt;
+}
+
+.description {
+    margin-left: 20%;
+    text-align: justify;
+    font-size: 9pt;
+}
+
+/* Education items */
+.education-item {
+    margin-bottom: 15pt;
+}
+
+.education-row {
+    margin-left: 20%;
+    margin-bottom: 3pt;
+}
+
+/* Personality and Summary sections */
+.personality-text, .summary-text {
+    text-align: justify;
+    font-size: 9pt;
+    line-height: 1.5;
+    margin-bottom: 10pt;
+}
+
+.personality-title, .summary-title {
+    font-weight: bold;
+    margin-bottom: 3pt;
+}

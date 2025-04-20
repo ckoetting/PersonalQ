@@ -112,6 +112,15 @@ app.on('window-all-closed', () => {
     }
 });
 
+// Get paths to assets based on environment
+function getAssetsPath() {
+    if (isDev) {
+        return path.join(process.cwd(), 'public');
+    } else {
+        return path.join(process.resourcesPath, 'app.asar.unpacked', 'build');
+    }
+}
+
 // IPC handler to test environment and configuration
 ipcMain.handle('test-env-access', () => {
     return {
@@ -380,5 +389,124 @@ ipcMain.handle('save-pdf-from-temp', async (event, data) => {
     } catch (error) {
         console.error('Failed to save PDF from temp file:', error);
         return { success: false, message: error.message };
+    }
+});
+
+// HTML to PDF conversion handler - NEW
+// Helper function to read image file and convert to data URI
+function imageFileToDataURI(filePath) {
+    try {
+        const fileData = fs.readFileSync(filePath);
+        const base64Data = fileData.toString('base64');
+        const mimeType = filePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+        return `data:${mimeType};base64,${base64Data}`;
+    } catch (error) {
+        console.error(`Error converting image to data URI: ${filePath}`, error);
+        return null;
+    }
+}
+
+ipcMain.handle('convert-html-to-pdf', async (event, { html, options }) => {
+    try {
+        console.log('Handling convert-html-to-pdf request');
+
+        // Get path to assets
+        const assetsPath = isDev
+            ? path.join(process.cwd(), 'public', 'assets', 'images')
+            : path.join(process.resourcesPath, 'app.asar.unpacked', 'build', 'assets', 'images');
+
+        console.log('Assets path:', assetsPath);
+
+        // Create data URIs for images
+        const logoDataURI = imageFileToDataURI(path.join(assetsPath, 'signium-logo.png'));
+        const watermarkDataURI = imageFileToDataURI(path.join(assetsPath, 'signium-logo-white.png'));
+        const bannerDataURI = imageFileToDataURI(path.join(assetsPath, 'signium-banner.png'));
+
+        // Log if images were successfully converted
+        console.log('Logo data URI created:', !!logoDataURI);
+        console.log('Watermark data URI created:', !!watermarkDataURI);
+        console.log('Banner data URI created:', !!bannerDataURI);
+
+        // Replace image paths with data URIs
+        let processedHtml = html;
+
+        if (logoDataURI) {
+            processedHtml = processedHtml.replace(/src="[^"]*signium-logo\.png"/g, `src="${logoDataURI}"`);
+        }
+
+        if (bannerDataURI) {
+            processedHtml = processedHtml.replace(/src="[^"]*signium-banner\.png"/g, `src="${bannerDataURI}"`);
+        }
+
+        if (watermarkDataURI) {
+            processedHtml = processedHtml.replace(
+                /background-image: url\([^)]*signium-logo-white\.png\)/g,
+                `background-image: url(${watermarkDataURI})`
+            );
+        }
+
+        // Create a temporary file for the HTML
+        const tempDir = os.tmpdir();
+        const tempHtmlPath = path.join(tempDir, `report-${uuidv4()}.html`);
+        fs.writeFileSync(tempHtmlPath, processedHtml, 'utf8');
+
+        console.log('Temporary HTML file created at:', tempHtmlPath);
+
+        // Create a hidden BrowserWindow to render the HTML
+        const win = new BrowserWindow({
+            width: 800,
+            height: 1200,
+            show: false, // Hidden window
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true
+            }
+        });
+
+        // Load the HTML file
+        const fileUrl = `file://${tempHtmlPath}`;
+        console.log('Loading HTML from:', fileUrl);
+
+        await win.loadURL(fileUrl);
+
+        // Wait for rendering to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        console.log('Generating PDF...');
+
+        // Print to PDF
+        const pdfOptions = {
+            printBackground: true,
+            pageSize: 'A4',
+            margins: {
+                top: 20,
+                bottom: 20,
+                left: 20,
+                right: 20
+            },
+            ...options
+        };
+
+        const data = await win.webContents.printToPDF(pdfOptions);
+
+        // Close the window
+        win.close();
+
+        // Clean up the temporary HTML file
+        try {
+            fs.unlinkSync(tempHtmlPath);
+            console.log('Temporary HTML file cleaned up');
+        } catch (err) {
+            console.error('Error removing temporary HTML file:', err);
+        }
+
+        // Convert the PDF Buffer to Base64
+        const base64Data = data.toString('base64');
+        console.log('PDF generation successful, base64 data length:', base64Data.length);
+
+        return base64Data;
+    } catch (error) {
+        console.error('Error converting HTML to PDF:', error);
+        throw error;
     }
 });

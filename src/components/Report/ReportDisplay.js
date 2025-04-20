@@ -1,4 +1,5 @@
-// src/components/Report/ReportDisplay.js
+// Update src/components/Report/ReportDisplay.js to use the new PDF generator
+
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import ReportGenerator from '../../services/ReportGenerator';
@@ -33,7 +34,7 @@ const ReportDisplay = ({ report, candidate, assignment }) => {
         }
     };
 
-    // Handle PDF report generation and download using temp files
+    // Handle PDF report generation and download using HTML-to-PDF conversion
     const handlePdfDownload = async () => {
         try {
             setIsGeneratingPdf(true);

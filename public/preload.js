@@ -51,7 +51,12 @@ contextBridge.exposeInMainWorld(
         savePdfFromTemp: (data) => {
             console.log('Calling savePdfFromTemp from preload');
             return ipcRenderer.invoke('save-pdf-from-temp', data);
+        },
+        convertHtmlToPdf: (options) => {
+            console.log('Calling convertHtmlToPdf from preload');
+            return ipcRenderer.invoke('convert-html-to-pdf', options);
         }
+
     }
 );
 
